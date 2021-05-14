@@ -26,6 +26,7 @@ function App() {
   const [time, setTime] = useState(1);
   const intervalId = useRef();
   const [isStart, setStart] = useState(false);
+  const [ageLimit, setAgeLimit] = useState(18);
 
   useEffect(() => {
     fetchStates();
@@ -124,6 +125,7 @@ function App() {
     const res = await fetchSlots();
     if (res && res.length) {
       setStart(true);
+      checkSlots();
       intervalId.current = setInterval(checkSlots, time * 60000);
     }
     setLoading(false);
@@ -131,31 +133,40 @@ function App() {
 
   const checkSlots = async () => {
     const res = await fetchSlots();
+    const allCenters = [];
     res.map((center) => {
       if (center.sessions && center.sessions.length) {
-        const isAvailable = center.sessions.some(
-          (session) => session.min_age_limit < 45 && session.available_capacity
-        );
-        if (isAvailable) {
-          alert(center.name);
-          clearInterval(intervalId.current);
-          handleNotification(
-            `slot available in  ${center.name} ${center.address}`
-          );
-          var audio = new Audio(
-            'https://m.tyroo.com/staging/audio/brand_215/2021/04/4489ebd1273c2ded5890f4fea37e5c81215.mp3'
-          );
-          audio.play();
-          setTimeout(() => {
-            audio.pause();
-          }, 6000);
-        }
+        center.sessions.map((session) => {
+          if (
+            session.min_age_limit === ageLimit &&
+            session.available_capacity
+          ) {
+            allCenters.push(center.name + '-' + session.date);
+          }
+          return null;
+        });
       }
       return null;
     });
+    if (allCenters.length) {
+      const centerName = allCenters.join('\n');
+      var audio = new Audio(
+        'https://m.tyroo.com/staging/audio/brand_215/2021/04/4489ebd1273c2ded5890f4fea37e5c81215.mp3'
+      );
+      audio.play();
+      alert(centerName);
+      clearInterval(intervalId.current);
+      handleNotification(`slot available in  ${centerName}`);
+      setTimeout(() => {
+        audio.pause();
+      }, 6000);
+    }
   };
 
   const disableButton = () => {
+    if (isStart) {
+      return isStart;
+    }
     if (loading) {
       return true;
     }
@@ -252,6 +263,14 @@ function App() {
           label='Pincode'
         />
       )}
+      <RadioGroup
+        value={ageLimit}
+        onChange={(e) => setAgeLimit(parseInt(e.target.value))}
+        style={{ flexDirection: 'row', justifyContent: 'center' }}
+      >
+        <FormControlLabel label='18+' control={<Radio value={18} />} />
+        <FormControlLabel label='45+' control={<Radio value={45} />} />
+      </RadioGroup>
       <div>
         <Select
           style={{ width: 130, marginTop: 35 }}
