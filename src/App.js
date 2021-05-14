@@ -168,6 +168,14 @@ function App() {
     return false;
   };
 
+  function MacTest() {
+    var mac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
+    if (mac) {
+      return true;
+    }
+  }
+
   return (
     <div className='App'>
       <AppBar style={{ padding: 20, textTransform: 'capitalize' }}>
@@ -284,6 +292,23 @@ function App() {
         )}
       </div>
       {isStart && <p>Scheduler started</p>}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {MacTest() && (
+          <p
+            style={{
+              color: '#777',
+              fontSize: 12,
+              opacity: 0.8,
+              textAlign: 'center',
+              width: 250
+            }}
+          >
+            For mac users make sure your chrome is allowed to send notifications
+            as you will be notified when the slot will be available. (If not you
+            can allow chrome notification from notification center)
+          </p>
+        )}
+      </div>
     </div>
   );
 }
